@@ -7,9 +7,6 @@ audio/
 # Generated transcription output
 transcriptions/
 
-# Claude IDE metadata
-.claude/
-
 # Python bytecode
 __pycache__/
 *.pyc
@@ -28,3 +25,8 @@ __pycache__/
 # Legacy / scratch scripts
 wispher.py
 gemini_api.py
+gemin_api.py
+
+# Editor temporary files
+*.swp
+*.save
