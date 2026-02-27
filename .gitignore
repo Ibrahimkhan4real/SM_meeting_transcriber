@@ -1,0 +1,30 @@
+# Python virtual environment
+.venv/
+
+# Audio input files
+audio/
+
+# Generated transcription output
+transcriptions/
+
+# Claude IDE metadata
+.claude/
+
+# Python bytecode
+__pycache__/
+*.pyc
+*.pyo
+
+# Audio/video files
+*.m4a
+*.mp3
+*.wav
+*.mp4
+
+# Environment variable files
+.env
+.env.*
+
+# Legacy / scratch scripts
+wispher.py
+gemini_api.py
