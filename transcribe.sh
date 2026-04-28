@@ -10,6 +10,12 @@ if ! command -v python3 &>/dev/null; then
     exit 1
 fi
 
+if [ -z "${GEMINI_API_KEY:-}" ]; then
+    echo "[setup] Error: GEMINI_API_KEY is not set. Export it before running:" >&2
+    echo "  export GEMINI_API_KEY=\"your-key-here\"" >&2
+    exit 1
+fi
+
 # ── Virtual environment setup ──────────────────────────────────────────────────
 if [ ! -d "$VENV_DIR" ]; then
     echo "[setup] Creating virtual environment..."
@@ -127,12 +133,6 @@ for f in "${FILES[@]}"; do
     stem=$(basename "${f%.*}")
     TRANSCRIPT_FILES+=("$SCRIPT_DIR/transcriptions/$stem.md")
 done
-
-if [ -z "${GEMINI_API_KEY:-}" ]; then
-    echo "[setup] Error: GEMINI_API_KEY is not set. Export it before running:" >&2
-    echo "  export GEMINI_API_KEY=\"your-key-here\"" >&2
-    exit 1
-fi
 
 if ! python -c "from google import genai" &>/dev/null; then
     echo "[setup] Installing google-genai..."
