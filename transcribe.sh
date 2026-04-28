@@ -38,10 +38,13 @@ fi
 if [ "$#" -gt 0 ]; then
     FILES=("$@")
 else
-    mapfile -t FILES < <(find "$SCRIPT_DIR/audio" -maxdepth 1 \
+    FILES=()
+    while IFS= read -r -d '' f; do
+        FILES+=("$f")
+    done < <(find "$SCRIPT_DIR/audio" -maxdepth 1 \
         -type f \( -iname "*.mp3" -o -iname "*.mp4" -o -iname "*.m4a" \
                    -o -iname "*.wav" -o -iname "*.ogg" -o -iname "*.flac" \
-                   -o -iname "*.webm" \))
+                   -o -iname "*.webm" \) -print0)
 fi
 
 if [ "${#FILES[@]}" -eq 0 ]; then
@@ -125,7 +128,11 @@ for f in "${FILES[@]}"; do
     TRANSCRIPT_FILES+=("$SCRIPT_DIR/transcriptions/$stem.md")
 done
 
-export GEMINI_API_KEY="${GEMINI_API_KEY:-}"
+if [ -z "${GEMINI_API_KEY:-}" ]; then
+    echo "[setup] Error: GEMINI_API_KEY is not set. Export it before running:" >&2
+    echo "  export GEMINI_API_KEY=\"your-key-here\"" >&2
+    exit 1
+fi
 
 if ! python -c "from google import genai" &>/dev/null; then
     echo "[setup] Installing google-genai..."
@@ -262,12 +269,17 @@ for transcript_path in transcript_paths:
 PYTHON
 
 # ── Completion notification ───────────────────────────────────────────────────
-MEETING_DATE=$(ls -d "$SCRIPT_DIR/transcriptions/supervisor_meeting_"* 2>/dev/null \
-    | sort | tail -1 | xargs basename | sed 's/supervisor_meeting_//')
+_last_dir=$(find "$SCRIPT_DIR/transcriptions" -maxdepth 1 -type d \
+    -name "supervisor_meeting_*" 2>/dev/null | sort | tail -1)
+MEETING_DATE="${_last_dir##*supervisor_meeting_}"
 
-if [ -n "$MEETING_DATE" ] && command -v notify-send &>/dev/null; then
-    notify-send "Transcription complete" \
-        "Analysis saved to transcriptions/supervisor_meeting_${MEETING_DATE}" \
-        --icon=document --urgency=normal
+if [ -n "$MEETING_DATE" ]; then
+    if command -v notify-send &>/dev/null; then
+        notify-send "Transcription complete" \
+            "Analysis saved to transcriptions/supervisor_meeting_${MEETING_DATE}" \
+            --icon=document --urgency=normal
+    elif command -v osascript &>/dev/null; then
+        osascript -e "display notification \"Analysis saved to transcriptions/supervisor_meeting_${MEETING_DATE}\" with title \"Transcription complete\""
+    fi
 fi
 echo "[done] All files processed."

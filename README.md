@@ -2,6 +2,10 @@
 
 Transcribes audio files locally using [faster-whisper](https://github.com/SYSTRAN/faster-whisper) (CPU, no GPU required), then sends the transcript to Google Gemini for structured analysis. Designed for PhD supervision meetings but works for any audio.
 
+Tested on **Linux** (Ubuntu 22.04+) and **macOS** (Ventura 13+ on both Intel and Apple Silicon).
+
+---
+
 ## What it produces
 
 For each audio file processed, the script creates:
@@ -14,49 +18,121 @@ For each audio file processed, the script creates:
   - `action_points.md`
 - `transcriptions/meetings_index.md` — running index of all meetings
 
-## Prerequisites
+---
 
-- Python 3 (tested with 3.12)
-- Bash
+## Quick start
 
-Dependencies (`faster-whisper`, `tqdm`, `google-genai`) are installed automatically into a local `.venv/` on first run.
+### macOS
 
-## Setup
+**1. Install Python 3**
 
-1. **Set your Gemini API key** in your shell before running:
+If you don't have Python 3, the easiest ways are:
 
-   ```bash
-   export GEMINI_API_KEY="your-key-here"
-   ```
+```bash
+# Option A — Xcode Command Line Tools (no extra installs)
+xcode-select --install
 
-   > **Security note:** Never hardcode your API key directly in `transcribe.sh`.
-   > If you have added a key to the script, remove it and use the environment variable above before pushing to a public repository.
+# Option B — Homebrew (recommended if you use Homebrew already)
+brew install python
+```
 
-2. **Place audio files** in the `audio/` directory (`.mp3`, `.mp4`, `.m4a`, `.wav`, `.ogg`, `.flac`, `.webm`), or pass file paths directly as arguments.
+Verify: `python3 --version` should print `Python 3.x.x`.
 
-3. **Run the script:**
+**2. Get a Gemini API key**
 
-   ```bash
-   bash transcribe.sh
-   ```
+Go to [Google AI Studio](https://aistudio.google.com/app/apikey), create a free key, then add it to your shell profile so it's always set:
 
-   Or pass specific files:
+```bash
+# Add this line to ~/.zshrc (macOS default shell)
+echo 'export GEMINI_API_KEY="your-key-here"' >> ~/.zshrc
+source ~/.zshrc
+```
 
-   ```bash
-   bash transcribe.sh path/to/recording.m4a
-   ```
+**3. Clone the repo and place your audio files**
 
-The virtual environment is created automatically in `.venv/` on first run.
+```bash
+git clone https://github.com/Ibrahimkhan4real/SM_meeting_transcriber.git
+cd SM_meeting_transcriber
+mkdir -p audio
+# Copy your .mp3 / .m4a / .wav etc. files into the audio/ folder
+```
+
+**4. Run**
+
+```bash
+bash transcribe.sh
+```
+
+Or point it directly at a file:
+
+```bash
+bash transcribe.sh ~/Downloads/supervision_2025-04-22.m4a
+```
+
+On first run the script creates a `.venv/` and installs `faster-whisper`, `tqdm`, and `google-genai` automatically. This takes a minute. Subsequent runs start immediately.
+
+When the analysis is complete, a macOS notification appears from Notification Centre.
+
+---
+
+### Linux
+
+**1. Install Python 3**
+
+```bash
+# Debian / Ubuntu
+sudo apt install python3 python3-venv
+
+# Fedora
+sudo dnf install python3
+```
+
+**2. Get a Gemini API key**
+
+Add to `~/.bashrc` (or `~/.zshrc` if using zsh):
+
+```bash
+echo 'export GEMINI_API_KEY="your-key-here"' >> ~/.bashrc
+source ~/.bashrc
+```
+
+**3. Clone the repo and place your audio files**
+
+```bash
+git clone https://github.com/Ibrahimkhan4real/SM_meeting_transcriber.git
+cd SM_meeting_transcriber
+mkdir -p audio
+# Copy audio files into audio/
+```
+
+**4. Run**
+
+```bash
+bash transcribe.sh
+```
+
+A desktop notification appears via `notify-send` when the analysis is complete (requires `libnotify-bin` on Debian/Ubuntu: `sudo apt install libnotify-bin`).
+
+---
+
+## Supported audio formats
+
+`.mp3`, `.mp4`, `.m4a`, `.wav`, `.ogg`, `.flac`, `.webm`
+
+---
 
 ## Files
 
 | File | Purpose |
 |------|---------|
-| `transcribe.sh` | Main entry point — runs transcription and Gemini analysis |
+| `transcribe.sh` | Main entry point — transcription and Gemini analysis |
 | `wispher.py` | Legacy standalone transcription script (openai-whisper) |
+
+---
 
 ## Notes
 
-- Transcription uses the `small` Whisper model on CPU (`int8` quantisation). Larger models (`medium`, `large`) are more accurate but slower.
-- Gemini model used: `gemini-2.5-flash`.
-- The `audio/` and `transcriptions/` directories are excluded from version control (see `.gitignore`).
+- Transcription uses the `small` Whisper model on CPU (`int8` quantisation). Works on Intel and Apple Silicon. Larger models (`medium`, `large`) are more accurate but slower.
+- Gemini model: `gemini-2.5-flash`.
+- The `audio/` and `transcriptions/` directories are excluded from version control (`.gitignore`).
+- If your file names contain a date in `YYYY-MM-DD` format, that date is used in the output folder name. Otherwise the folder is named `supervisor_meeting_unknown_date`.
