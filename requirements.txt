@@ -1,0 +1,6 @@
+# Pinned to the versions verified working on 2026-09-05.
+# Regenerate with: .venv/bin/pip freeze
+faster-whisper==1.2.1
+ctranslate2==4.8.2
+google-genai==2.22.0
+tqdm==4.70.0

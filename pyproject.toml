@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "transcribe"
+version = "2.0.0"
+description = "Local audio transcription with optional Gemini meeting analysis"
+requires-python = ">=3.9"
+dynamic = ["dependencies"]
+
+[project.scripts]
+transcribe = "transcribe.cli:main"
+
+[tool.setuptools]
+packages = ["transcribe"]
+
+[tool.setuptools.dynamic]
+dependencies = { file = ["requirements.txt"] }
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+# The package lives at the repo root; this is the single mechanism that puts
+# it on sys.path for tests. At runtime transcribe.sh sets PYTHONPATH instead.
+pythonpath = ["."]
